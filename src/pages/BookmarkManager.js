@@ -1,79 +1,69 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Input, Modal, Form } from 'react-bootstrap';
 import "bootstrap/dist/css/bootstrap.css";
 
 
 
-const BookmarkForm = ({ onSubmit }) => {
-    const [title, setTitle] = useState("");
-    const [url, setUrl] = useState("");
-    const [category, setCategory] = useState("");
-
-    
-  return (
-    <Form onSubmit={onSubmit}>
-        <Form.Group controlId="formTitle">
-            <Form.Control
-            type="text"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            />
-            </Form.Group>
-            <br />
-
-            <Form.Group controlId="formUrl">
-                <Form.Control
-                    type="text"
-                    placeholder="URL"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                />
-            </Form.Group>
-                <br />
-            <Form.Group controlId="formCategory" style={{ display: 'flex'}}>
-                    <Form.Control
-                    type="text"
-                    placeholder="Category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    />
-                    <span style={{ border: '1px solid black', padding: '5px' }}>+</span>
-                        
-            </Form.Group>
-                <br/>
-                <Button variant="danger" style={{ marginRight: '10px'}}>
-                        Cancel
-                </Button>
-                <Button variant="primary" type="submit">
-                        Save
-                </Button>
-        </Form>
-  );
-};
-
-
-
+const getDatafromLS =()=>{
+    const data = localStorage.getItem('books');
+    if(data){
+        return JSON.parse(data);
+    }
+    else{
+        return []
+    }
+}
 
 export default function BookmarkManager() {
+
 const [show, setShow] = useState(false);
 const handleClose = () => setShow(false);
+const handleShow = () => setShow(true); 
 
-const handleShow = () => setShow(true);
+const[detailsshow, setDetailsshow] = useState(false);
+const handleDetailsShow = () => setDetailsshow(true); 
 
-const onBookmarkFormSubmit = (e) => {
+
+
+const[books, setBooks] = useState(getDatafromLS());
+
+
+const [title, setTitle] = useState("");
+const [url, setUrl] = useState("");
+const [category, setCategory] = useState("");
+
+
+    const onBookmarkFormSubmit = (e) => {
     e.preventDefault();
     handleClose();
+
+    const book = {
+        title,
+        url,
+        category
+    }
+    setBooks([...books, book]);
+    setTitle('');
+    setUrl('');
+    setCategory('');
+    
   };
-   
+
+
+
+  useEffect(()=>{
+    localStorage.setItem('books', JSON.stringify(books))
+
+
+  },[books])
 
     return (
-        <div style={{ display: 'flex', alignContent:'center', justifyContent: 'center' }}>
-            <div className="addbookmark">
+        <div style={{ display: 'flex', alignContent:'center', justifyContent: 'space-around', padding: 50 }}>
+            <div className="addbook-mark">
                 <div style={{ display: 'flex'}}>
-                    <p className="introduceText" style={{ marginRight: '10px'}}>Bookmark Manager</p>
-                    <Button variant="primary" onClick={handleShow} >Add BookMark</Button>
+                    <p className="introduce-text" style={{ marginRight: 10}}>Bookmark Manager</p>
+                    <Button variant="outline-secondary" onClick={handleShow} >Add BookMark</Button>
                 </div>
                 <br />
                 <Modal show={show} onHide={handleClose}>
@@ -82,43 +72,100 @@ const onBookmarkFormSubmit = (e) => {
                     </Modal.Header>
                     <Modal.Body>
                     <>
-                    <BookmarkForm onSubmit={onBookmarkFormSubmit} />
+                    {/* <BookmarkForm/> */}
+                    <Form onSubmit={onBookmarkFormSubmit}>
+                        <Form.Group controlId="formTitle">
+                            <Form.Control
+                            type="text"
+                            placeholder="Title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            />
+                            </Form.Group>
+                            <br />
+
+                            <Form.Group controlId="formUrl">
+                                  
+                                <Form.Control
+                                    type="text"
+                                    placeholder="URL"
+                                    value={url}
+                                    onChange={(e) => setUrl(e.target.value)}
+                                />
+                            </Form.Group>
+                                <br />
+                                <Form.Group controlId="formCategory" style={{ display: 'flex'}}>
+                                <Form.Select  onChange={(e) => setCategory(e.target.value)}>
+                                <option>Select Category</option>
+                                <option value="Category A">Category A</option>
+                                <option value="Category B">Category B</option>
+                                </Form.Select>
+                                <Button variant="outline-primary">+</Button>
+                                        
+                            </Form.Group>
+                            
+                            <br/>
+                            <Button variant="outline-danger" style={{ marginRight: 10}} onClick={handleClose}>
+                                    Cancel
+                            </Button>
+                            <Button variant="outline-primary" type="submit">
+                                    Save
+                            </Button>
+                    </Form>
                     </>
                     </Modal.Body>
                     <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>Close Modal</Button>
+                    <Button variant="outline-secondary" onClick={handleClose}>Close Modal</Button>
                     </Modal.Footer>
                 </Modal>
              
 
-                <div className="categoryAreaA">
-                    <p>Category A</p>
-                    <div style={{display: 'flex', border: '2px solid black', width: "300px", justifyContent: 'space-around', padding: '20px'
-                 }}>
-                        <p>Javascript Tutorial</p>
-                        <Button variant="secondary"> Details</Button>
+              <div className='view-container'>
+                { books.length > 0 && 
+                  <div className="categoryAreaA">
+                  {/* <Category books={books}/> */}
+                 { books.map(book => (
+                    <div>
+                        <p>{book.category}</p>
+                        <div style={{display: 'flex', border: '2px solid black', width: "300px", justifyContent: 'space-around', padding: '20px'
+                        }}>
+                        <p>{book.title}</p>
+                        <Button variant="outline-secondary" onClick={handleDetailsShow}> Details</Button>
+                        </div>
+                        <br />
                     </div>
-                </div>
-                <br />
+                ))}
+                        
+                    </div>
+                }
+                    
 
-                <div className="categoryAreaB">
+                {/* <div className="categoryAreaB">
                     <p>Category B</p>
                     <div style={{display: 'flex', border: '2px solid black', width: "300px", justifyContent: 'space-around', padding: '20px'
                  }}>
                         <p>Javascript Tutorial</p>
                         <Button variant="secondary"> Details</Button>
                     </div>
-                </div>
+                </div> */}
+              </div>
 
                 <br />
 
-                 <div className="details" style={{border: '2px solid black', width: "300px",  padding: '20px'
-                 }}>
-                    <p>Title: </p>
-                    <p>URL: </p>
-                    <p>Category: </p>
-                </div>
+                 
             </div>
+            { detailsshow && 
+                <div className="details" style={{border: '2px solid black', width: 300,  padding: 20, marginTop: 100, 
+                 }}>
+                { books.map(book => (
+                    <div>
+                        <p>Title: {book.title}</p>
+                        <p>Url: {book.url}</p>
+                        <p>Category: {book.category}</p>
+                    </div>
+                ))}
+            </div>  
+            } 
         </div>
 
     );
